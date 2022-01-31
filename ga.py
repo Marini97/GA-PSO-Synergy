@@ -1,19 +1,21 @@
 import random
+
 import numpy as np
-import functions
 from geneticalgorithm2 import geneticalgorithm2 as ga, AlgorithmParams
+
+import functions
 
 
 def normalize_fitness(fitness_vals, task='max'):
     """
-    Normalize fitness values between 1.0 and 2.0.
+    Normalize fitness values between 0 and 1.
 
     When the GA problem is to minimize an objective function, invert the
     fitness values. therefore, the particles with lower fitness have a
     higher probability of being selected for the next generation.
     """
     fitness_norm = ((fitness_vals - min(fitness_vals)) /
-                    (max(fitness_vals) - min(fitness_vals) + 1.0) + 1.0)
+                    (max(fitness_vals) - min(fitness_vals) + 1.0))
 
     return (1.0 / fitness_norm) if task == 'min' else fitness_norm
 
@@ -318,8 +320,6 @@ def run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0, l_bound=-100.0, 
 if __name__ == '__main__':
     eval_func = functions.griewank
     name, l_bound, u_bound, task = functions.get_function("ackley")
-
-    # print(run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0.1, l_bound=l_bound, u_bound=u_bound))
 
     print(run_ga(pop_size=20, chrom_size=10, n_gens=1000, fitness_func=eval_func,
                  prob_mut=0.8, possible_values=[0, 1]))

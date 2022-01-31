@@ -1,6 +1,6 @@
 import numpy as np
 import pso
-import genetic as ga
+import ga as ga
 import functions
 
 

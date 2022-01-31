@@ -1,1 +1,1 @@
-# Tesina-AI
+# Tesina-AI: Sinergia tra GA e PSO negli algoritmi ibridi

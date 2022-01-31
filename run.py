@@ -1,13 +1,12 @@
 import pandas as pd
 import json
 import pso
-import genetic as ga
+import ga as ga
 import logapso
 import hgapso
 import functions
 import multiprocessing as mp
 import time
-import xlsxwriter
 
 def read_json(file_name):
     """
@@ -48,7 +47,7 @@ def save_results(algorithm, benchmark_func, df_results):
     df_results.to_excel(writer, sheet_name='Data', index=False)
 
     workbook = writer.book
-    # add formulas
+    # add formulas to the excel worksheet
     worksheet = workbook.get_worksheet_by_name('Data')
     average_time = ''
     average_convergence = ''
@@ -56,19 +55,19 @@ def save_results(algorithm, benchmark_func, df_results):
         average_time = average_time + f'B{str((i * iters) + 2)},'
         average_convergence = average_convergence + f'A{str((i + 1) * iters + 1)},'
 
-    # average
+    # average formulas for the convergence and time between all runs
     worksheet.write('M1', 'Average Convergence')
     worksheet.write_formula('M2', f'=AVERAGE({average_convergence[:-1]})')
     worksheet.write('O1', 'Average Time')
     worksheet.write_formula('O2', f'=AVERAGE({average_time[:-1]})')
 
-    # min
+    # min formulas for the convergence and time between all runs
     worksheet.write('M3', 'Min Convergence')
     worksheet.write_formula('M4', f'=MIN({average_convergence[:-1]})')
-    worksheet.write('O3', 'Average Time')
-    worksheet.write_formula('O3', f'=MIN({average_time[:-1]})')
+    worksheet.write('O3', 'Min Time')
+    worksheet.write_formula('O4', f'=MIN({average_time[:-1]})')
 
-    # add line chart
+    # add line chart for the fitness-iteration
     worksheet = workbook.add_chartsheet()
     chart_fitness = workbook.add_chart({'type': 'line'})
     chart_fitness.set_y_axis({'name': 'Fitness'})
@@ -83,7 +82,7 @@ def save_results(algorithm, benchmark_func, df_results):
         })
     worksheet.set_chart(chart_fitness)
 
-    # add column chart
+    # add column chart for the time-runs
     worksheet = workbook.add_chartsheet()
     chart_time = workbook.add_chart({'type': 'column'})
     chart_time.set_y_axis({'name': 'Time'})
@@ -107,13 +106,6 @@ def create_grid_params(dict_params):
     Transform a dictionary that returns lists to a list
     of dictionaries containing all possible combination of 
     parameters (cartesian product).
-
-    Example:
-        input: {'max_iters':[100,200], 'pop_size':[30,50]}
-        output:[{'max_iters':100, 'pop_size':30},
-                {'max_iters':100, 'pop_size':50},
-                {'max_iters':200, 'pop_size':30},
-                {'max_iters':200, 'pop_size':50}]
 
     Parameters
     ----------
@@ -191,7 +183,7 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
 
     func_params = {"eval_func": eval_func, "l_bound": l_bound,
                    "u_bound": u_bound, "task": task}
-    # create all permutations of parameters
+    # create all permutations of parameters if needed
     grid_params = create_grid_params(parameters)
 
     n_params = len(grid_params)
@@ -214,8 +206,7 @@ def run_experiment(algorithm, parameters, func_name, n_runs,
                     pop_size=p['pop_size_ga'], elite=p['elite'], l_bound=l_bound,
                     u_bound=u_bound)
             elif algorithm == 'hgapso':
-                _, _, best_evals = hgapso.run_hgapso(alg_params=p,
-                                                     func_params=func_params)
+                _, _, best_evals = hgapso.run_hgapso(alg_params=p, func_params=func_params)
             elif algorithm == 'logapso':
                 _, _, best_evals = logapso.run_logapso(
                     alg_params=p, func_params=func_params,
@@ -414,18 +405,11 @@ def run_processes(processes, n_cpus):
             processes[i].start()
         else:
             break
-    '''
-    for i in range(n_cpus):
-        if i < len(processes):
-            processes[i].join()
-        else:
-            break
-    '''
     if len(processes) > n_cpus:
         run_processes(processes[n_cpus:], n_cpus)
 
 
-def run_parallel_experiments(n_runs, params, n_cpus):
+def run_parallel_experiments(params, n_cpus):
     """
     Break the experiments in different processes and run them
     using all avalilable cores.
@@ -442,7 +426,7 @@ def run_parallel_experiments(n_runs, params, n_cpus):
     """
     algorithms = ['pso', 'ga', 'hgapso', 'logapso']
     benchmark_funcs = params['function']
-
+    n_runs = params['n_runs']
     # List containg the processes to run in parallel
     processes = []
 
@@ -476,4 +460,4 @@ def run_parallel_experiments(n_runs, params, n_cpus):
 
 if __name__ == '__main__':
     params = read_json('parameters.json')
-    run_parallel_experiments(20, params, mp.cpu_count())
+    run_parallel_experiments(params, mp.cpu_count())
