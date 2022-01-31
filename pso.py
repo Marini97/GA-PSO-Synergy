@@ -290,3 +290,4 @@ if __name__ == '__main__':
     particles, global_solutions, best_evals = run_pso(
         eval_func, consts, max_iters=1000, pop_size=60, particle_size=30
     )
+    print(best_evals)

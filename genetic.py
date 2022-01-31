@@ -10,7 +10,7 @@ def normalize_fitness(fitness_vals, task='max'):
 
     When the GA problem is to minimize an objective function, invert the
     fitness values. therefore, the particles with lower fitness have a
-    higher probebility of being selected for the next generation.
+    higher probability of being selected for the next generation.
     """
     fitness_norm = ((fitness_vals - min(fitness_vals)) /
                     (max(fitness_vals) - min(fitness_vals) + 1.0) + 1.0)
@@ -61,7 +61,6 @@ def roulette_selection(population, n_to_select, fitness_vals, task):
 
 
 def random_arith_crossover(population):
-    """."""
     rd = np.random.uniform(0, 1, size=population.shape)
     cross_pop = rd[:-1] * population[:-1] + (1 - rd[:-1]) * population[1:]
     # Last chromosome
@@ -272,7 +271,7 @@ def run_ga(pop_size, chrom_size, n_gens, fitness_func, prob_mut,
     return ga_pop[best_chrom]
 
 
-def run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0.1, l_bound=-100.0, u_bound=100.0):
+def run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0, l_bound=-100.0, u_bound=100.0):
     """Run the GA algorithm for max_iters iterations.
 
         Parameters
@@ -283,18 +282,18 @@ def run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0.1, l_bound=-100.0
             Number of GA iterations.
         pop_size: int
             Number of GA particles.
+        elite: float
+            Percentage of elite in the population.
         l_bound: float
             Minimum value for a particle.
         u_bound: float
             Maximum value for a particle.
-        task: string
-            'min' for minimization problems and 'max' for maximization.
 
         Returns
         -------
 
         global_evals: list[float]
-            Evalulations for global best solution in each iteration.
+            Evaluations for global best solution in each iteration.
         """
 
     varbound = np.array([[l_bound, u_bound], [l_bound, u_bound]])
@@ -317,7 +316,10 @@ def run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0.1, l_bound=-100.0
 
 
 if __name__ == '__main__':
-    eval_func = functions.ackley
+    eval_func = functions.griewank
     name, l_bound, u_bound, task = functions.get_function("ackley")
 
-    print(run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0.1, l_bound=l_bound, u_bound=u_bound))
+    # print(run_full_ga(eval_func, max_iters=100, pop_size=30, elite=0.1, l_bound=l_bound, u_bound=u_bound))
+
+    print(run_ga(pop_size=20, chrom_size=10, n_gens=1000, fitness_func=eval_func,
+                 prob_mut=0.8, possible_values=[0, 1]))
